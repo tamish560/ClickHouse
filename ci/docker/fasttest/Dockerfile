@@ -72,6 +72,7 @@ RUN apt-get update \
         bzip2 \
         nasm \
         yasm \
+        boto3 \
         --yes --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /var/cache/debconf /tmp/*
