@@ -6409,13 +6409,12 @@ void QueryFuzzer::fuzz(ASTPtr & ast)
                 rename_query->exchange = true;
         }
 
-        /// RENAME DATABASE formats only element[0]'s from/to database (dereferenced unconditionally)
-        /// and has no table slots, while the table form requires from/to table. Only switch when the
-        /// slots the target form needs are already populated, else formatting derefs a null field.
+        /// RENAME DATABASE formats only element[0], so only convert a single element with both
+        /// databases set (else later renames vanish); disable only when table slots are populated.
         if (fuzz_rand() % 10 == 0 && !elems.empty())
         {
             const auto & e0 = elems.front();
-            if (!rename_query->database && e0.from.database && e0.to.database)
+            if (!rename_query->database && elems.size() == 1 && e0.from.database && e0.to.database)
                 rename_query->database = true;
             else if (rename_query->database && e0.from.table && e0.to.table)
                 rename_query->database = false;
