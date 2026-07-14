@@ -6409,16 +6409,9 @@ void QueryFuzzer::fuzz(ASTPtr & ast)
                 rename_query->exchange = true;
         }
 
-        /// RENAME DATABASE formats only element[0], so only convert a single element with both
-        /// databases set (else later renames vanish); disable only when table slots are populated.
-        if (fuzz_rand() % 10 == 0 && !elems.empty())
-        {
-            const auto & e0 = elems.front();
-            if (!rename_query->database && elems.size() == 1 && e0.from.database && e0.to.database)
-                rename_query->database = true;
-            else if (rename_query->database && e0.from.table && e0.to.table)
-                rename_query->database = false;
-        }
+        /// No RENAME TABLE <-> RENAME DATABASE toggle: the two AST shapes are incompatible
+        /// (table elements always carry table slots, database elements never do), so an in-place
+        /// flip either drops identifiers on reparse or is inert. It would need an element rebuild.
 
         /// The from/to database and table identifiers are registered as children.
         fuzz(rename_query->children);
